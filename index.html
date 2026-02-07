@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw Helpdesk - Remote Support</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦞</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #e63946;
+            --primary-dark: #c1121f;
+            --bg: #1a1a2e;
+            --bg-light: #16213e;
+            --text: #edf2f4;
+            --text-muted: #8d99ae;
+            --success: #06d6a0;
+            --warning: #ffd166;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        .card {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .code-block {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .code-block code {
+            color: #58a6ff;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: var(--text);
+        }
+        
+        .copy-btn.copied {
+            background: var(--success);
+            color: white;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tab {
+            padding: 0.6rem 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .warning {
+            background: rgba(255, 209, 102, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+        
+        .warning-title {
+            color: var(--warning);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.75rem;
+        }
+        
+        .highlight {
+            background: rgba(230, 57, 70, 0.2);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', monospace;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .quick-start {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+        }
+        
+        .quick-start h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .big-command {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .code-block {
+                font-size: 0.95rem;
+            }
+            
+            .big-command {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🦞</div>
+            <h1>OpenClaw Helpdesk</h1>
+            <p class="subtitle">Secure Remote Support</p>
+        </header>
+
+        <div class="card quick-start">
+            <h2>⚡ Already set up? Start here:</h2>
+            <div class="code-block big-command">
+                <code>tmate</code>
+                <button class="copy-btn" onclick="copyCode(this, 'tmate')">Copy</button>
+            </div>
+            <p>Then send the <span class="highlight">ssh ...</span> line via Signal</p>
+        </div>
+
+        <div class="card">
+            <div class="step-header">
+                <span class="step-number">1</span>
+                <span class="step-title">One-Time Setup: Install tmate</span>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('mac')">Mac</button>
+                <button class="tab" onclick="showTab('linux')">Linux</button>
+                <button class="tab" onclick="showTab('pi')">Raspberry Pi</button>
+            </div>
+            
+            <div id="mac" class="tab-content active">
+                <p>Open Terminal (press <kbd>Cmd</kbd> + <kbd>Space</kbd>, type "Terminal", press Enter)</p>
+                <div class="code-block">
+                    <code>brew install tmate</code>
+                    <button class="copy-btn" onclick="copyCode(this, 'brew install tmate')">Copy</button>
+                </div>
+                <p class="help-text">Don't have Homebrew? <a href="https://brew.sh" target="_blank" style="color: var(--primary);">Install it first</a></p>
+            </div>
+            
+            <div id="linux" class="tab-content">
+                <p>Open Terminal (press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>T</kbd>)</p>
+                <div class="code-block">
+                    <code>sudo apt update && sudo apt install -y tmate</code>
+                    <button class="copy-btn" onclick="copyCode(this, 'sudo apt update && sudo apt install -y tmate')">Copy</button>
+                </div>
+            </div>
+            
+            <div id="pi" class="tab-content">
+                <p>Open Terminal</p>
+                <div class="code-block">
+                    <code>sudo apt update && sudo apt install -y tmate</code>
+                    <button class="copy-btn" onclick="copyCode(this, 'sudo apt update && sudo apt install -y tmate')">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="step-header">
+                <span class="step-number">2</span>
+                <span class="step-title">When You Need Help</span>
+            </div>
+            
+            <p>Run this command in Terminal:</p>
+            <div class="code-block">
+                <code>tmate</code>
+                <button class="copy-btn" onclick="copyCode(this, 'tmate')">Copy</button>
+            </div>
+            
+            <p style="margin-top: 1rem;">Look at the <strong>bottom of the screen</strong> for a line like:</p>
+            <div class="code-block">
+                <code>ssh abc123xyz@nyc1.tmate.io</code>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="step-header">
+                <span class="step-number">3</span>
+                <span class="step-title">Send the Connection</span>
+            </div>
+            
+            <p>Copy that <strong>entire line</strong> and send it via <strong>Signal</strong> or <strong>iMessage</strong>.</p>
+            
+            <div class="warning">
+                <div class="warning-title">⚠️ Security Notice</div>
+                <p>Never send the connection via email, SMS, or Slack. Only use encrypted messaging (Signal or iMessage).</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="step-header">
+                <span class="step-number">4</span>
+                <span class="step-title">Watch & End</span>
+            </div>
+            
+            <p>You'll see everything happening in real-time. When we're done:</p>
+            <div class="code-block">
+                <code>exit</code>
+                <button class="copy-btn" onclick="copyCode(this, 'exit')">Copy</button>
+            </div>
+            <p class="help-text">Or just close the Terminal window. The session ends immediately.</p>
+        </div>
+
+        <footer>
+            <p>Powered by <a href="https://tmate.io" target="_blank">tmate</a> • End-to-end encrypted</p>
+            <p style="margin-top: 0.5rem;">Questions? Contact your support rep via Signal</p>
+        </footer>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function copyCode(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
