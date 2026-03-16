@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-zinc-950 text-zinc-50 antialiased;
+  }
+
+  a {
+    @apply text-purple-400 hover:text-fuchsia-400 transition-colors;
+  }
+}
+
+@layer components {
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-open {
+    @apply bg-green-500/10 text-green-400 ring-1 ring-inset ring-green-500/20;
+  }
+
+  .badge-answered {
+    @apply bg-blue-500/10 text-blue-400 ring-1 ring-inset ring-blue-500/20;
+  }
+
+  .badge-closed {
+    @apply bg-zinc-500/10 text-zinc-400 ring-1 ring-inset ring-zinc-500/20;
+  }
+
+  .card {
+    @apply bg-zinc-900 border border-zinc-800 rounded-lg p-6;
+  }
+
+  .btn-primary {
+    @apply bg-purple-500 hover:bg-fuchsia-500 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-zinc-800 hover:bg-zinc-700 text-zinc-50 font-medium py-2 px-4 rounded-lg border border-zinc-700 transition-colors;
+  }
+
+  .input {
+    @apply w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-zinc-50 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent;
+  }
+
+  .prose-dark {
+    @apply text-zinc-300 leading-relaxed;
+  }
+
+  .prose-dark h1 {
+    @apply text-2xl font-bold text-zinc-50 mb-4 mt-8;
+  }
+
+  .prose-dark h2 {
+    @apply text-xl font-semibold text-zinc-50 mb-3 mt-6;
+  }
+
+  .prose-dark h3 {
+    @apply text-lg font-semibold text-zinc-100 mb-2 mt-4;
+  }
+
+  .prose-dark p {
+    @apply mb-4;
+  }
+
+  .prose-dark ul {
+    @apply list-disc list-inside mb-4 space-y-1;
+  }
+
+  .prose-dark ol {
+    @apply list-decimal list-inside mb-4 space-y-1;
+  }
+
+  .prose-dark code {
+    @apply bg-zinc-800 text-purple-300 px-1.5 py-0.5 rounded text-sm;
+  }
+
+  .prose-dark pre {
+    @apply bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4 overflow-x-auto;
+  }
+
+  .prose-dark pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .prose-dark strong {
+    @apply text-zinc-50 font-semibold;
+  }
+}
