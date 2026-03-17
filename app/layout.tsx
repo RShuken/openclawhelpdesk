@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     template: '%s | OpenClaw Helpdesk',
   },
   description: 'Support, docs, and Q&A for OpenClaw Install clients.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

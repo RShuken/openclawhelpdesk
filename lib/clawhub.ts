@@ -189,6 +189,32 @@ export async function getTicket(id: string): Promise<TicketDetail | null> {
   }
 }
 
+export async function getTicketsByEmail(email: string): Promise<TicketSummary[]> {
+  try {
+    const data = await apiFetch<Record<string, unknown>>(
+      `/tickets?email=${encodeURIComponent(email)}`
+    )
+    const tickets = data.tickets || data.results || data
+    return Array.isArray(tickets) ? tickets : []
+  } catch {
+    return []
+  }
+}
+
+export async function searchAll(query: string): Promise<{
+  docs: DocSummary[]
+  questions: QuestionSummary[]
+}> {
+  const [docsResult, questionsResult] = await Promise.allSettled([
+    searchDocs(query),
+    getQuestions({ q: query }),
+  ])
+  return {
+    docs: docsResult.status === 'fulfilled' ? docsResult.value.docs || [] : [],
+    questions: questionsResult.status === 'fulfilled' ? questionsResult.value : [],
+  }
+}
+
 export function replyToTicket(id: string, data: {
   body: string
   email: string
