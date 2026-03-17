@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import { getQuestions, type QuestionSummary } from '@/lib/clawhub'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
@@ -13,7 +14,7 @@ function statusBadge(status: string) {
   return `badge ${map[status] || 'badge-closed'}`
 }
 
-export default function QAPage() {
+function QAPageContent() {
   const [questions, setQuestions] = useState<QuestionSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -27,8 +28,8 @@ export default function QAPage() {
       const params: Record<string, string> = {}
       if (search) params.q = search
       if (statusFilter) params.status = statusFilter
-      const data = await getQuestions(params)
-      setQuestions(data.questions)
+      const results = await getQuestions(params)
+      setQuestions(results)
     } catch {
       setError('Could not load questions. The API may not be available yet.')
     } finally {
@@ -118,7 +119,7 @@ export default function QAPage() {
                 </div>
                 <span className={statusBadge(q.status)}>{q.status}</span>
               </div>
-              {q.tags.length > 0 && (
+              {q.tags?.length > 0 && (
                 <div className="flex gap-2 mt-3">
                   {q.tags.map((tag) => (
                     <span key={tag} className="badge badge-closed">{tag}</span>
@@ -130,5 +131,13 @@ export default function QAPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function QAPage() {
+  return (
+    <ErrorBoundary>
+      <QAPageContent />
+    </ErrorBoundary>
   )
 }

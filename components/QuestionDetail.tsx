@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, FormEvent } from 'react'
 import { getQuestion, answerQuestion, type QuestionDetail } from '@/lib/clawhub'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
@@ -13,7 +14,7 @@ function statusBadge(status: string) {
   return `badge ${map[status] || 'badge-closed'}`
 }
 
-export default function QuestionDetailView({ id }: { id: string }) {
+function QuestionDetailContent({ id }: { id: string }) {
   const [question, setQuestion] = useState<QuestionDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -26,8 +27,12 @@ export default function QuestionDetailView({ id }: { id: string }) {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getQuestion(id)
-        setQuestion(data.question)
+        const result = await getQuestion(id)
+        if (!result) {
+          setError('Question not found.')
+        } else {
+          setQuestion(result)
+        }
       } catch {
         setError('Could not load this question.')
       } finally {
@@ -46,8 +51,8 @@ export default function QuestionDetailView({ id }: { id: string }) {
       await answerQuestion(id, { body: answerBody, email: answerEmail })
       setSubmitMsg('Answer submitted successfully!')
       setAnswerBody('')
-      const data = await getQuestion(id)
-      setQuestion(data.question)
+      const refreshed = await getQuestion(id)
+      if (refreshed) setQuestion(refreshed)
     } catch {
       setSubmitMsg('Failed to submit answer. Please try again.')
     } finally {
@@ -76,7 +81,8 @@ export default function QuestionDetailView({ id }: { id: string }) {
     )
   }
 
-  const sortedAnswers = [...question.answers].sort((a, b) => {
+  const answers = Array.isArray(question.answers) ? question.answers : []
+  const sortedAnswers = [...answers].sort((a, b) => {
     if (a.accepted && !b.accepted) return -1
     if (!a.accepted && b.accepted) return 1
     return b.votes - a.votes
@@ -96,7 +102,7 @@ export default function QuestionDetailView({ id }: { id: string }) {
         <div className="prose-dark mb-4 whitespace-pre-wrap">{question.body}</div>
         <div className="flex items-center gap-3 text-sm text-zinc-500">
           <span>Asked {new Date(question.createdAt).toLocaleDateString()}</span>
-          {question.tags.length > 0 && (
+          {question.tags?.length > 0 && (
             <div className="flex gap-2">
               {question.tags.map((tag) => (
                 <span key={tag} className="badge badge-closed">{tag}</span>
@@ -107,7 +113,7 @@ export default function QuestionDetailView({ id }: { id: string }) {
       </div>
 
       <h2 className="text-lg font-semibold text-zinc-50 mb-4">
-        {question.answers.length} {question.answers.length === 1 ? 'Answer' : 'Answers'}
+        {answers.length} {answers.length === 1 ? 'Answer' : 'Answers'}
       </h2>
 
       {sortedAnswers.length === 0 && (
@@ -175,5 +181,13 @@ export default function QuestionDetailView({ id }: { id: string }) {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function QuestionDetailView({ id }: { id: string }) {
+  return (
+    <ErrorBoundary>
+      <QuestionDetailContent id={id} />
+    </ErrorBoundary>
   )
 }

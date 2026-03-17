@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect, FormEvent } from 'react'
 import { getTicket, replyToTicket, type TicketDetail } from '@/lib/clawhub'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
@@ -23,7 +24,7 @@ function priorityBadge(priority: string) {
   return `badge ${map[priority] || map.normal}`
 }
 
-export default function TicketDetailView({ id }: { id: string }) {
+function TicketDetailContent({ id }: { id: string }) {
   const [ticket, setTicket] = useState<TicketDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -36,8 +37,12 @@ export default function TicketDetailView({ id }: { id: string }) {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getTicket(id)
-        setTicket(data.ticket)
+        const result = await getTicket(id)
+        if (!result) {
+          setError('Ticket not found.')
+        } else {
+          setTicket(result)
+        }
       } catch {
         setError('Could not load this ticket.')
       } finally {
@@ -56,8 +61,8 @@ export default function TicketDetailView({ id }: { id: string }) {
       await replyToTicket(id, { body: replyBody, email: replyEmail })
       setSubmitMsg('Reply sent!')
       setReplyBody('')
-      const data = await getTicket(id)
-      setTicket(data.ticket)
+      const refreshed = await getTicket(id)
+      if (refreshed) setTicket(refreshed)
     } catch {
       setSubmitMsg('Failed to send reply.')
     } finally {
@@ -86,6 +91,8 @@ export default function TicketDetailView({ id }: { id: string }) {
     )
   }
 
+  const messages = Array.isArray(ticket.messages) ? ticket.messages : []
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <Link href="/support" className="text-sm text-zinc-500 hover:text-purple-400 mb-6 inline-block">
@@ -108,14 +115,14 @@ export default function TicketDetailView({ id }: { id: string }) {
 
       <h2 className="text-lg font-semibold text-zinc-50 mb-4">Messages</h2>
 
-      {ticket.messages.length === 0 && (
+      {messages.length === 0 && (
         <div className="card text-center py-8 mb-6">
           <p className="text-zinc-400">No replies yet. Our team will respond soon.</p>
         </div>
       )}
 
       <div className="grid gap-3 mb-8">
-        {ticket.messages.map((msg) => (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`card ${msg.fromSupport ? 'border-purple-500/30 bg-purple-500/5' : ''}`}
@@ -174,5 +181,13 @@ export default function TicketDetailView({ id }: { id: string }) {
         </div>
       )}
     </div>
+  )
+}
+
+export default function TicketDetailView({ id }: { id: string }) {
+  return (
+    <ErrorBoundary>
+      <TicketDetailContent id={id} />
+    </ErrorBoundary>
   )
 }

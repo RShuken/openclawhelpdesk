@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { useState, FormEvent } from 'react'
 import { askQuestion } from '@/lib/clawhub'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
-export default function AskPage() {
+function AskPageContent() {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [tags, setTags] = useState('')
@@ -121,5 +122,13 @@ export default function AskPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function AskPage() {
+  return (
+    <ErrorBoundary>
+      <AskPageContent />
+    </ErrorBoundary>
   )
 }

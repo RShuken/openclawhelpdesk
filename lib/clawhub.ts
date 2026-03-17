@@ -80,20 +80,36 @@ export interface QuestionDetail extends QuestionSummary {
   answers: Answer[]
 }
 
-export function getQuestions(params?: { q?: string; tag?: string; status?: string }) {
-  const searchParams = new URLSearchParams()
-  if (params?.q) searchParams.set('q', params.q)
-  if (params?.tag) searchParams.set('tag', params.tag)
-  if (params?.status) searchParams.set('status', params.status)
-  const qs = searchParams.toString()
-  return apiFetch<{ questions: QuestionSummary[] }>(`/questions${qs ? `?${qs}` : ''}`)
+export async function getQuestions(params?: { q?: string; tag?: string; status?: string }): Promise<QuestionSummary[]> {
+  try {
+    const searchParams = new URLSearchParams()
+    if (params?.q) searchParams.set('q', params.q)
+    if (params?.tag) searchParams.set('tag', params.tag)
+    if (params?.status) searchParams.set('status', params.status)
+    const qs = searchParams.toString()
+    const data = await apiFetch<Record<string, unknown>>(`/questions${qs ? `?${qs}` : ''}`)
+    // Handle multiple possible response shapes from the API
+    const questions = data.questions || data.results || data
+    return Array.isArray(questions) ? questions : []
+  } catch {
+    return []
+  }
 }
 
-export function getQuestion(id: string) {
-  return apiFetch<{ question: QuestionDetail }>(`/questions/${id}`)
+export async function getQuestion(id: string): Promise<QuestionDetail | null> {
+  try {
+    const data = await apiFetch<Record<string, unknown>>(`/questions/${id}`)
+    const question = (data.question || data.result || data) as QuestionDetail
+    if (!question || !question.id) return null
+    // Ensure answers is always an array
+    if (!Array.isArray(question.answers)) question.answers = []
+    return question
+  } catch {
+    return null
+  }
 }
 
-export function askQuestion(data: {
+export async function askQuestion(data: {
   title: string
   body: string
   tags: string[]
@@ -107,7 +123,7 @@ export function askQuestion(data: {
   })
 }
 
-export function answerQuestion(questionId: string, data: {
+export async function answerQuestion(questionId: string, data: {
   body: string
   email: string
   turnstileToken?: string
@@ -160,8 +176,17 @@ export function createTicket(data: {
   })
 }
 
-export function getTicket(id: string) {
-  return apiFetch<{ ticket: TicketDetail }>(`/tickets/${id}`)
+export async function getTicket(id: string): Promise<TicketDetail | null> {
+  try {
+    const data = await apiFetch<Record<string, unknown>>(`/tickets/${id}`)
+    const ticket = (data.ticket || data.result || data) as TicketDetail
+    if (!ticket || !ticket.id) return null
+    // Ensure messages is always an array
+    if (!Array.isArray(ticket.messages)) ticket.messages = []
+    return ticket
+  } catch {
+    return null
+  }
 }
 
 export function replyToTicket(id: string, data: {

@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { useState, FormEvent } from 'react'
 import { createTicket } from '@/lib/clawhub'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
-export default function SupportPage() {
+function SupportPageContent() {
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState('normal')
@@ -115,5 +116,13 @@ export default function SupportPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+export default function SupportPage() {
+  return (
+    <ErrorBoundary>
+      <SupportPageContent />
+    </ErrorBoundary>
   )
 }
