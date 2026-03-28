@@ -1,0 +1,122 @@
+---
+title: Understanding Your CRM & Follow-Up System
+description: How OpenClaw tracks your leads, manages follow-ups, and keeps your pipeline organized
+tags: [crm, leads, follow-ups, pipeline]
+---
+
+# Understanding Your CRM & Follow-Up System
+
+One of the most valuable things your OpenClaw setup does is manage your sales pipeline automatically. Every inquiry becomes a tracked lead. Every conversation is logged. And your AI assistant knows when to follow up so you don't have to remember.
+
+Here's how it all works.
+
+## What Gets Tracked Automatically
+
+When someone contacts you through any connected channel, your agent creates a lead record containing:
+
+- **Contact information** — name, email, phone (whatever they provide)
+- **Source** — where they came from (website form, Telegram, referral, etc.)
+- **Conversation summary** — what they asked, what they're looking for
+- **Timestamp** — when they first reached out
+
+You don't configure this. It happens automatically for every contact.
+
+## Pipeline Stages
+
+Your CRM organizes leads through a pipeline with these stages:
+
+| Stage | What It Means |
+|-------|---------------|
+| **New Lead** | Just came in, hasn't been contacted yet |
+| **Contacted** | Initial outreach sent |
+| **Qualified** | They've expressed real interest and fit your criteria |
+| **Proposal Sent** | You've sent them a proposal or quote |
+| **Deposit Paid** | They've paid a deposit to start |
+| **Active Client** | Currently working together |
+| **Closed Won** | Successfully completed |
+| **Closed Lost** | Didn't move forward |
+
+Your agent moves leads through stages based on what happens in conversations. When someone pays a deposit, the agent automatically updates their status to "Deposit Paid."
+
+## Follow-Up Scheduling
+
+Your agent can schedule follow-ups and reminds you when they're due. The default follow-up logic:
+
+- **New Lead with no response**: Follow up in 48 hours
+- **After sending a proposal**: Follow up in 3 days
+- **Active clients**: Check in every 2 weeks
+- **Custom**: You can tell your agent "Follow up with [name] in 5 days" and it will
+
+When a follow-up is due, your agent will surface it in your morning briefing or message you directly depending on your configuration.
+
+## How to Check Your Pipeline
+
+Ask your agent in any of these ways:
+
+- "Who do I need to follow up with today?"
+- "What's in my pipeline this week?"
+- "What happened with [client name]?"
+- "Show me all active clients"
+- "Any overdue follow-ups?"
+
+Your agent queries the CRM and gives you a summary instantly.
+
+## Adding Notes to a Contact
+
+During or after a call, you can tell your agent what happened:
+
+> "Add note to Sarah Chen: Had a great call. She's interested in the full setup. Sending proposal Thursday."
+
+The agent will:
+1. Find or create the contact record
+2. Add your note with a timestamp
+3. Update pipeline stage if appropriate
+4. Schedule any follow-up you mentioned
+
+## What You Can Do in the CRM Dashboard
+
+If you have access to the CRM dashboard, you can:
+
+- **View your full pipeline** in kanban or list view
+- **See contact detail pages** with conversation history, notes, and enrichment data
+- **Filter by stage, date, or status**
+- **Manually update stages** by dragging cards or using the stage dropdown
+- **Export contacts** to CSV
+
+The dashboard is at `crm.openclawinstall.net` (if enabled for your account). Ask us to enable it if you'd like access.
+
+## Lead Enrichment
+
+Your agent runs a nightly enrichment process that fills in missing information about your contacts:
+
+- **LinkedIn profile** — job title, company, industry
+- **Company details** — size, sector
+- **Social media** — Twitter/Instagram presence
+
+This happens automatically in the background. You don't need to do anything. The more complete a contact profile is, the better your agent can personalize outreach.
+
+## Privacy & Data Ownership
+
+All your CRM data lives in a database owned by you and managed by OpenClaw. We do not share, sell, or use your contact data for any purpose other than operating your installation.
+
+You can export your full database at any time by asking your agent: "Export my CRM contacts."
+
+## Common Questions
+
+**"Can I import my existing contacts?"**
+Yes — export a CSV from whatever you use now and send it to us. We'll map the fields and import everything.
+
+**"What if someone asks to be removed?"**
+Tell your agent: "Delete [name] from the CRM." The record will be permanently removed.
+
+**"Can I connect my email inbox?"**
+Email integration is available as an add-on. Ask us about it if you want inbound emails auto-captured as leads.
+
+**"How do I see all contacts, not just leads?"**
+Ask your agent: "Show me all contacts" or filter the dashboard by "All stages."
+
+---
+
+Your CRM is meant to free you from manual tracking so you can focus on the actual work. If something isn't being captured right or follow-ups aren't hitting at the right times, just tell your agent — we can tune the timing and triggers to match how you work.
+
+— REL — OpenClaw Support
