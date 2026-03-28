@@ -1,0 +1,107 @@
+---
+title: Trust and Verification — When Your Agent Gets It Wrong
+description: How to recognize hallucinated output, set up verification checkpoints, and build healthy skepticism into your AI workflow
+tags: [trust, verification, troubleshooting, best-practices]
+---
+
+# Trust and Verification — When Your Agent Gets It Wrong
+
+Your OpenClaw agent is powerful. It is also capable of confidently producing incorrect output — a phenomenon called hallucination. Understanding when and how to trust your agent versus when to verify its work is one of the most important skills you can develop as an OpenClaw user.
+
+## Recognizing Hallucinated Output
+
+Hallucination is when your agent generates information that sounds plausible but is factually wrong or simply made up. It is most common in these situations:
+
+**Facts and figures.** Ask your agent about specific numbers, dates, or statistics without providing a source and there is a chance it will invent them. If the output matters (a contract figure, a deadline, a regulatory requirement), verify it independently.
+
+**Task completion claims.** "I sent the email" or "I updated the spreadsheet" — your agent may report completing actions it did not actually execute, especially if a tool call failed silently. Always check the actual output, not just the claim.
+
+**Memory references.** Your agent may confidently describe conversations, decisions, or facts that never happened. If it references something and you do not remember it, check the source files before acting on the information.
+
+**Code and commands.** Generated code or shell commands may look correct but contain subtle errors. Never run generated commands without reading them first.
+
+### Warning Signs
+
+Watch for these patterns that often precede hallucinated output:
+- Unusually specific details with no clear source ("the regulation was updated on March 14th, 2024")
+- Smooth, confident answers to questions that are actually ambiguous or unknown
+- References to past conversations that you cannot find in your files
+- Results that are exactly what you hoped for with no caveats
+
+---
+
+## Setting Up Verification Checkpoints
+
+The best defense against acting on bad output is building verification into your workflow before it matters.
+
+**For consequential actions:** Tell your agent explicitly — "Before sending any email or posting anything publicly, show me exactly what you are going to send and wait for my confirmation." Add this to your `AGENTS.md`.
+
+**For research tasks:** Ask your agent to cite its sources. "Where did you find that?" should always get a specific, checkable answer. If it cannot cite a source, treat the output as a starting point, not a conclusion.
+
+**For code:** Run it in a test environment first. Never run generated code directly on your production system or against live data.
+
+**For agent-generated files:** Read them before using them. A quick skim catches most errors.
+
+---
+
+## Using Doctor Checks and Diagnostics
+
+OpenClaw includes built-in diagnostics that help you verify your agent's actual state:
+
+```
+openclaw doctor
+```
+
+This command checks whether configured tools are actually connected and working, whether skills are properly installed, whether credentials are valid, and whether there are configuration conflicts.
+
+Run this:
+- After any skill installation or update
+- If your agent starts behaving unexpectedly
+- Before a high-stakes session (client presentation, live deployment)
+
+If `openclaw doctor` reports all clear but the agent is still behaving oddly, the issue is usually in `MEMORY.md` or recent daily note files. Check those next.
+
+---
+
+## When to Trust vs. Verify
+
+A practical rule of thumb:
+
+**Trust (but spot check periodically):**
+- Reading and summarizing content you can see yourself
+- Running diagnostics and status checks
+- Organizing files and information
+- Drafting text that you will review before sending
+
+**Verify before acting:**
+- Specific facts, statistics, or citations
+- Completion of actions that have external effects (emails sent, files modified, API calls made)
+- Code that will run with write access to important systems
+- Any output that will be shared with clients, posted publicly, or used in a contract
+
+**Always check the actual output, not just the agent's summary of it:**
+- If the agent says it created a file, open the file
+- If it says it sent a message, check the sent folder
+- If it says it ran a command successfully, verify the result
+
+---
+
+## Common False-Positive Patterns
+
+These are situations where your agent appears to succeed but has not:
+
+**"I've updated the calendar."** Check the calendar app directly. Tool integrations sometimes fail silently.
+
+**"I've sent that to you."** If you do not see it, it did not arrive. Ask the agent to resend or check what actually happened.
+
+**"I've saved that to memory."** Check the relevant file. If it is not there, it was not saved.
+
+**"I've checked and everything looks fine."** A report of health is only as good as the diagnostic. If something feels off, run `openclaw doctor` yourself rather than relying on the agent's self-assessment.
+
+---
+
+Building a healthy verification habit does not mean distrusting your agent — it means using it more effectively. The goal is to catch errors before they cause problems, not to redo every piece of work yourself.
+
+If you run into specific patterns of incorrect output, [open a support ticket](/support) with examples. We can review your configuration and make targeted improvements.
+
+— REL — OpenClaw Support
