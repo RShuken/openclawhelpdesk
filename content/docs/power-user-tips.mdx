@@ -1,0 +1,141 @@
+---
+title: OpenClaw Power User Tips and Tricks
+description: Advanced techniques for getting the most out of your OpenClaw setup — from heartbeat optimization to multi-channel automation
+tags: [power-user, tips, configuration, automation]
+---
+
+# OpenClaw Power User Tips and Tricks
+
+Once your basic setup is running, there is a whole layer of optimization available to you. These tips come from experienced OpenClaw users who have refined their setups over months of daily use.
+
+## Heartbeat Optimization
+
+The heartbeat is one of OpenClaw's most powerful features — a periodic check-in that lets your agent proactively manage tasks without you having to ask. Here is how to get the most out of it.
+
+**Batch your checks instead of creating separate crons.** If you want your agent to check email, calendar, and the weather each morning, put all three in `HEARTBEAT.md` rather than creating three separate cron jobs. The agent handles them in a single turn, which is more efficient and easier to review.
+
+**Rotate checks on a schedule.** Not everything needs to be checked every heartbeat. Tell your agent: "Check email on every heartbeat. Check the analytics dashboard twice a day. Check the CRM follow-up list once a day in the morning." This keeps each heartbeat fast and focused.
+
+**Add a quiet hours rule.** Add to your `AGENTS.md`: "Do not send proactive messages between 10pm and 8am unless it is urgent." Your agent will still run heartbeat checks but will queue non-urgent notifications for the morning.
+
+**Track state between heartbeats.** Your agent can write to `memory/heartbeat-state.json` to remember what it last checked and when. This prevents it from re-alerting you about the same thing every 30 minutes.
+
+---
+
+## Skill Chaining and Dependencies
+
+Skills become much more powerful when they work together. Here are the most effective combinations:
+
+**Calendar + Email:** Your agent reads your calendar, sees a meeting tomorrow, checks if there are follow-up emails from that person, and drafts a briefing note before you even ask.
+
+**CRM + Messaging:** When a new lead comes in, your agent creates a CRM record, logs the conversation, and sends a follow-up template — all automatically.
+
+**Memory + Web Search:** Before answering a question about a client or topic, your agent checks its memory first. Only if memory is incomplete does it search the web. This reduces redundant searches and keeps answers grounded in your actual history.
+
+To chain skills, describe the workflow in your `AGENTS.md`:
+```
+When a new Telegram message arrives from an unknown contact:
+1. Search memory for any prior context about this person
+2. Check CRM for any existing lead record
+3. Draft a response based on what you find
+4. Ask me to review before sending
+```
+
+---
+
+## Custom AGENTS.md Patterns
+
+Your `AGENTS.md` is the most powerful configuration file in your setup. Here are patterns that work particularly well:
+
+**The Decision Tree:** Describe how to handle common situations so the agent does not have to ask you every time:
+```
+If someone asks about pricing:
+- Under $500 projects: respond directly with the rate card
+- $500-$5000 projects: schedule a discovery call
+- Over $5000: flag to me immediately
+```
+
+**The Not-To-Do List:** Explicitly list what the agent should never do:
+```
+Never:
+- Send any email without my approval
+- Delete any file
+- Share any client information in a group chat
+- Book anything on my calendar without confirming with me first
+```
+
+**Persona Instructions:** If you interact across multiple channels, specify tone per channel:
+```
+On Telegram (personal): casual, direct, brief
+On email (business): professional, complete sentences, signature
+In Discord (community): friendly, helpful, patient
+```
+
+---
+
+## Efficient Token Usage
+
+Every word in context costs tokens. Here is how to keep costs low without losing capability:
+
+**Keep MEMORY.md lean.** This file loads on every main session. Every 1,000 words is roughly 1,300 tokens. Keep it under 2,000 words and trim aggressively.
+
+**Archive old daily files.** Files in `memory/` accumulate. An agent reading a month of daily logs is burning tokens on mostly-irrelevant history. Move files older than 2 weeks to an `archive/` subfolder.
+
+**Use specific questions.** "What happened in last Tuesday's session?" uses far fewer tokens than "What have we been working on lately?" The more specific your question, the less context the agent needs to retrieve.
+
+**Set a model for routine tasks.** For heartbeat checks and simple summaries, use a faster/cheaper model. Reserve the most capable model for complex reasoning tasks.
+
+---
+
+## Multi-Channel Setups
+
+Running OpenClaw across Telegram, Discord, and email simultaneously is manageable with a few guidelines:
+
+**Designate one channel as primary.** Your agent should know where to reach you first. "For urgent items, use Telegram. For daily summaries, use email." This prevents duplication.
+
+**Mirror important actions to a private channel.** Set up a private Telegram group or Discord channel where your agent logs every significant action it takes. This gives you an audit trail without cluttering your main conversations.
+
+**Separate personal from business.** If you have both personal and business channels configured, specify in `AGENTS.md` which topics go where. Client conversations belong in business channels; personal reminders stay personal.
+
+---
+
+## Cron Job Patterns for Automation
+
+Cron jobs are ideal for work that needs to happen at a specific time, independent of whether you are in a conversation:
+
+**Morning briefing at 8am:**
+```
+Run a summary of: overnight emails, today's calendar, any pending CRM follow-ups, and weather if I have outdoor meetings. Send to Telegram.
+```
+
+**Weekly review on Sunday evenings:**
+```
+Summarize the week: what was accomplished, what is still open, what needs attention next week. Post to my private notes channel.
+```
+
+**Monthly check on the first of the month:**
+```
+Review active client accounts. Flag anyone who has not had contact in 30+ days.
+```
+
+The key is to write cron job descriptions as complete, self-contained tasks — your agent has no conversation context when a cron fires, so instructions need to be explicit.
+
+---
+
+## Memory Maintenance Routines
+
+Your memory files need periodic attention to stay accurate and lean:
+
+**Weekly (5 minutes):** Skim `MEMORY.md`. Remove anything outdated. Add anything important from this week.
+
+**Monthly (15 minutes):** Archive daily note files older than 2 weeks. Review `MEMORY.md` more carefully and refactor — consolidate related entries, delete obsolete ones.
+
+Ask your agent to help: "Review MEMORY.md and tell me what looks outdated." Then decide what to keep, update, or remove.
+
+---
+
+These tips compound over time. A well-tuned OpenClaw setup from six months of iteration is dramatically more capable than a fresh install. Keep refining, document what works, and your agent gets better the longer you run it.
+
+For questions about any of these techniques, [ask in the community Q&A](/q) or [open a support ticket](/support).
+
+— REL — OpenClaw Support
