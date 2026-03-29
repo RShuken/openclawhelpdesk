@@ -1,0 +1,133 @@
+---
+title: Common OpenClaw Disasters and How to Fix Them
+description: Real recovery procedures for the most catastrophic OpenClaw failures, based on actual support cases
+tags: [troubleshooting, safety, security]
+---
+
+# Common OpenClaw Disasters and How to Fix Them
+
+Even well-configured OpenClaw setups can go wrong in ways that feel catastrophic in the moment. Here are the five most common serious failures we see — and exactly how to recover from each one.
+
+## 1. Agent Running Destructive Commands
+
+**What happened:** Your agent deleted files, modified system configs, or ran commands you did not authorize.
+
+This usually happens when an agent is given broad file system access and either misinterprets a request or hallucinates a task it thinks you asked for.
+
+**Immediate steps:**
+
+1. Stop the agent immediately. Open your terminal and kill the OpenClaw process:
+   ```
+   openclaw stop
+   ```
+2. Check what was changed. Look at your shell history:
+   ```
+   history | tail -50
+   ```
+3. If files were deleted, check your Trash or Recycle Bin first — many deletions go there rather than being permanent.
+4. For Mac users, Time Machine backups may have copies of deleted files. For Linux, check snapshots if you have them configured.
+
+**Long-term fix:**
+
+Review your `AGENTS.md` file and remove any broad file system permissions you do not need. Add explicit rules like "Never delete files without asking first" and "Never modify files outside `/root/clawd/`". Set your autonomy mode to `manual` until you are confident in the configuration.
+
+## 2. Infinite Loops Burning API Credits
+
+**What happened:** Your agent got into a loop — checking something, taking action, checking again — and ran up your API bill before you noticed.
+
+Common triggers include heartbeat checks that queue new tasks, cron jobs that spawn other cron jobs, and agents that retry failed operations indefinitely.
+
+**Immediate steps:**
+
+1. Stop the agent and all cron jobs:
+   ```
+   openclaw stop
+   openclaw cron list
+   ```
+   Kill any active cron jobs that look suspicious.
+
+2. Check your API provider dashboard (Anthropic, OpenAI, etc.) to see current usage and set a temporary spending cap.
+
+3. Review `HEARTBEAT.md` and remove any tasks that could cause cascading actions.
+
+**Long-term fix:**
+
+Add rate limiting language to your `AGENTS.md`: "Never spawn more than 3 tasks in a single heartbeat cycle." Set explicit API spending alerts in your model provider dashboard. Review cron jobs weekly and remove anything that is not actively needed.
+
+## 3. Memory Corruption and Hallucinated Context
+
+**What happened:** Your agent is referencing people, tasks, or events that never happened — or confidently stating things that contradict your actual history.
+
+This happens when `MEMORY.md` or daily note files have been written with incorrect information, or when the agent has conflated context from different conversations.
+
+**Immediate steps:**
+
+1. Open `MEMORY.md` and read it carefully. Look for entries that do not match reality.
+2. Delete or correct any hallucinated facts.
+3. Check recent daily note files in `memory/` for the same issue.
+
+**Long-term fix:**
+
+Treat `MEMORY.md` like a document you co-author with your agent — review it weekly. You can instruct your agent: "When writing to MEMORY.md, include the date and the source conversation for each fact." This makes it much easier to spot and remove inaccurate entries later.
+
+## 4. Broken Skill Installations
+
+**What happened:** A skill was partially installed, failed partway through, or was installed in a way that conflicts with your existing setup.
+
+Symptoms include the agent not finding a skill it should have, skills that work in isolation but fail when combined, or config files that reference credentials that were never set.
+
+**Immediate steps:**
+
+1. Run the OpenClaw diagnostic:
+   ```
+   openclaw doctor
+   ```
+   This checks for broken skill configurations and missing dependencies.
+
+2. Look at the specific skill directory. Well-structured skills live in `~/clawd/skills/`. If a skill directory exists but is incomplete (missing `SKILL.md` or `config.json`), that is your culprit.
+
+3. Remove the broken skill:
+   ```
+   rm -rf ~/clawd/skills/broken-skill-name/
+   ```
+
+4. Re-install from scratch following the skill's official installation guide.
+
+**Long-term fix:**
+
+Always test new skill installations in isolation before combining them with your existing setup. After any skill install, send your agent a test message that exercises that skill specifically.
+
+## 5. Permission Escalation Issues
+
+**What happened:** Your agent attempted to run commands it should not have access to — admin operations, system modifications, or accessing files outside its designated workspace.
+
+**Immediate steps:**
+
+1. Stop the agent immediately:
+   ```
+   openclaw stop
+   ```
+
+2. Review your `AGENTS.md` for any accidental broad permissions. Look for phrases like "you can run any command" or unrestricted tool access.
+
+3. Check if any sensitive operations were completed by reviewing shell history and system logs.
+
+4. Change any credentials or API keys that may have been exposed.
+
+**Long-term fix:**
+
+Follow the principle of least privilege. Your agent only needs access to what it actually uses. Add explicit blocked commands to your `AGENTS.md`:
+
+```
+BLOCKED (never run): format/wipe commands, system registry edits, 
+firewall modifications, user account changes, anything requiring sudo 
+without explicit per-command approval.
+```
+
+Set `autonomyDefault: guided` in your OpenClaw config so the agent presents plans and waits for approval before executing anything consequential.
+
+---
+
+**When to contact support:** If you have experienced any of these issues and are not sure whether full recovery was successful, [open a support ticket](/support) and include your `openclaw doctor` output. We will review your configuration and confirm everything looks correct before you resume normal operations.
+
+— REL — OpenClaw Support

@@ -1,0 +1,148 @@
+---
+title: New User Onboarding Checklist — Your First Week with OpenClaw
+description: A day-by-day checklist for getting your OpenClaw setup running reliably in the first week after installation
+tags: [getting-started, onboarding, checklist]
+---
+
+# New User Onboarding Checklist — Your First Week with OpenClaw
+
+Congratulations on your OpenClaw installation. The first week is the most important time to establish good habits, verify everything works correctly, and get comfortable with how your agent thinks and behaves.
+
+This guide walks you through each day with specific tasks to check off.
+
+---
+
+## Day 1 — Verify and Baseline
+
+**Your goal today:** Confirm the installation is solid and understand what you have.
+
+### Tasks
+
+- [ ] **Verify OpenClaw is running.** Open your terminal and run:
+  ```
+  openclaw doctor
+  ```
+  You should see green checkmarks for your installed components. If anything shows red, [contact support](/support) with the output before proceeding.
+
+- [ ] **Send a test message.** Message your agent through your configured channel (usually Telegram). Say hello and ask it to tell you what skills are installed. Confirm it responds correctly.
+
+- [ ] **Check your channels are connected.** If you set up Telegram, Discord, or email during installation, send a test message through each one.
+
+- [ ] **Locate your key files.** Find these on your machine:
+  - `~/clawd/AGENTS.md` — your agent's core instructions
+  - `~/clawd/MEMORY.md` — long-term memory (may be empty at first)
+  - `~/clawd/SOUL.md` — your agent's persona and style
+  Open each one and read it. Understanding what is there helps you know what to change later.
+
+- [ ] **Write your first memory entry.** Open `~/clawd/MEMORY.md` and add a few basic facts:
+  ```
+  - My name is [your name]
+  - I use this for [your main use case]
+  - My timezone is [your timezone]
+  ```
+
+---
+
+## Day 2 — Configure AGENTS.md and Memory
+
+**Your goal today:** Personalize your agent's behavior and establish memory habits.
+
+### Tasks
+
+- [ ] **Review AGENTS.md.** Read through it and identify anything that does not match your situation. Common updates:
+  - Your name and how you want to be addressed
+  - Your business type and main use cases
+  - Any channels or tools you want explicitly enabled or restricted
+
+- [ ] **Add your not-to-do list.** In `AGENTS.md`, add a section for things the agent should never do without asking. At minimum:
+  ```
+  Never send any external message (email, Telegram to others, Discord post) without my approval.
+  Never delete any files.
+  ```
+
+- [ ] **Test memory persistence.** Tell your agent a specific fact ("I have a meeting with Dan every Tuesday at 2pm"). Ask it to add this to MEMORY.md. Then close the conversation and start a new one. Ask your agent about Dan's meeting. It should know.
+
+- [ ] **Set up your first heartbeat task.** Create or edit `~/clawd/HEARTBEAT.md` and add one simple task:
+  ```
+  - Check if today's calendar has any events I should know about
+  ```
+
+---
+
+## Day 3 — Deploy Your First Skill and Test Heartbeats
+
+**Your goal today:** Activate one additional skill and confirm your agent is proactively checking in.
+
+### Tasks
+
+- [ ] **Choose a skill to activate.** The most popular first skills are:
+  - **Calendar** — connects to Google Calendar or similar
+  - **Email** — reads and drafts emails
+  - **Web search** — lets your agent look things up
+
+  Talk to your agent about which skill makes most sense for your workflow. If you did not get a skill deployed during installation, reach out to us.
+
+- [ ] **Test the deployed skill.** Ask your agent to do something that exercises the skill. If you installed calendar, ask: "What is on my calendar tomorrow?"
+
+- [ ] **Verify heartbeats are running.** Check `~/clawd/HEARTBEAT.md` exists and has at least one task. Ask your agent: "When was the last heartbeat check?" It should be able to tell you.
+
+- [ ] **Watch the agent's first proactive message.** At the next heartbeat cycle, your agent should send you a brief check-in. Review the message and note whether it seems accurate and useful.
+
+---
+
+## Day 4 — Set Up Cron Jobs and Integrations
+
+**Your goal today:** Automate your first scheduled task.
+
+### Tasks
+
+- [ ] **Create your morning briefing cron job.** Ask your agent to set up a daily summary. Something like: "Every weekday at 8am, send me a brief summary of today's calendar events and any important emails that arrived overnight."
+
+- [ ] **Test the cron job.** Ask your agent to run the cron task immediately so you can see what the output looks like. Adjust the prompt if the summary is too long or missing something.
+
+- [ ] **Connect any remaining integrations.** Review your installation notes. Are there any services that were installed but not fully configured? Common ones: Notion, GitHub, Google Drive, Slack.
+
+- [ ] **Set up a weekly digest.** In addition to the daily briefing, a weekly summary on Sunday evenings helps you see the bigger picture. Ask your agent to set one up.
+
+---
+
+## Day 5 — Advanced Config and Multi-Device
+
+**Your goal today:** Fine-tune your setup and make sure it works wherever you are.
+
+### Tasks
+
+- [ ] **Review a week of agent behavior.** Look back at the conversations from this week. Are there patterns of things the agent consistently gets right or wrong? Update `AGENTS.md` and `MEMORY.md` accordingly.
+
+- [ ] **Add more heartbeat tasks.** Now that you have seen one heartbeat check in action, add the others you want:
+  - Email check
+  - CRM follow-ups (if applicable)
+  - Weather (if you have outdoor meetings or travel)
+
+- [ ] **Test on mobile.** If you use Telegram on your phone, verify that conversations work correctly there, not just on desktop.
+
+- [ ] **Review your permissions and safety rules.** Re-read the "never do" section of `AGENTS.md`. Based on this week's experience, are there additional restrictions you want to add? Are there any that turned out to be too restrictive?
+
+- [ ] **Document what works.** Add a note to `MEMORY.md` describing the workflows that have been most useful this week. This helps your agent prioritize these patterns going forward.
+
+---
+
+## Common Gotchas in the First Week
+
+**The agent forgets context between sessions.** This is normal — your agent starts fresh each conversation. Use `MEMORY.md` and daily note files to preserve what matters.
+
+**Heartbeats are quiet at first.** If the agent is not sending proactive messages, check that `HEARTBEAT.md` has tasks and that your heartbeat schedule is configured. Ask your agent directly: "Are you running heartbeat checks?"
+
+**Skills that work in testing fail in practice.** Calendar and email integrations sometimes have permission issues that only surface in real use. If a skill stops working, run `openclaw doctor` and check for credential warnings.
+
+**Over-long MEMORY.md.** By the end of week one, MEMORY.md can get verbose. Trim it to essentials — the most important facts, preferences, and rules.
+
+---
+
+## After Week One
+
+At the end of your first week, you should have a running, personalized setup. The most successful OpenClaw users review their configuration briefly each week and iterate based on what is and is not working.
+
+If you hit any issues during setup, the [troubleshooting guide](/docs/troubleshooting) covers the most common problems. For anything else, [open a support ticket](/support) and we will help you get unstuck.
+
+— REL — OpenClaw Support

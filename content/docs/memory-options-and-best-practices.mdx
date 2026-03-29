@@ -1,0 +1,107 @@
+---
+title: OpenClaw Memory Options and Best Practices
+description: A practical guide to the different memory systems in OpenClaw and when to use each one
+tags: [memory, configuration, best-practices]
+---
+
+# OpenClaw Memory Options and Best Practices
+
+OpenClaw gives your AI agent multiple ways to remember things across conversations. Each approach has different tradeoffs around permanence, token cost, and maintenance overhead. Here is a guide to each option and when to use it.
+
+## The Three Memory Systems
+
+### 1. MEMORY.md — Manual Curation
+
+`MEMORY.md` is a plain text file your agent reads at the start of every main session. Think of it like the agent's long-term memory — curated facts, preferences, and context that should always be available.
+
+**Best for:**
+- Facts that rarely change (your name, business type, preferences)
+- Decisions you want the agent to remember permanently
+- Context about ongoing relationships or projects
+
+**How to use it:**
+Open `~/clawd/MEMORY.md` in any text editor and write in plain language. Your agent will read and follow what's there. Example:
+
+```
+- My name is Sarah. I run a dental practice in Denver.
+- I prefer responses in plain language, no jargon.
+- My main scheduling system is Calendly — link: [your link]
+- Do not send any external communications without asking me first.
+```
+
+**Token cost:** Low. The file is read once per session.
+
+**Maintenance:** You own this. Review it monthly and remove anything that is no longer accurate.
+
+### 2. Daily Note Files — Raw Logs
+
+The `memory/` directory holds daily log files in `YYYY-MM-DD.md` format. Your agent writes to these files throughout the day — what happened, decisions made, things to follow up on.
+
+**Best for:**
+- Capturing the details of what happened in a session
+- Short-term context you need for the next few days
+- A recoverable record if something goes wrong
+
+**How to use it:**
+These files are created automatically. You do not need to manage them directly. Your agent uses them to answer "what did we work on yesterday?" or "what was decided in last Thursday's session?"
+
+**Token cost:** Medium. Recent daily files are often included in context, which adds up over time.
+
+**Maintenance:** Archive or delete files older than 30 days. Your agent can do this during scheduled maintenance.
+
+### 3. Auto-Embeddings with Vector Store — Semantic Search
+
+The vector store approach converts your documents and conversation history into embeddings — mathematical representations that allow semantic search. Instead of reading every file linearly, the agent can search for the most relevant memories given the current context.
+
+**Best for:**
+- Large knowledge bases (hundreds of documents)
+- Cases where you want the agent to "find relevant memories" rather than read everything
+- Teams or power users with extensive session history
+
+**Token cost:** Very low per query — only the most relevant chunks are loaded into context.
+
+**Maintenance:** Requires initial setup and periodic re-indexing as new content is added. The `knowledge-base` skill handles this automatically if installed.
+
+---
+
+## Memory Maintenance Routines
+
+Regardless of which memory system you use, maintenance matters. Here is a practical routine:
+
+**Weekly (5 minutes):**
+- Open `MEMORY.md` and skim for anything that has become outdated
+- Ask your agent: "Is there anything in MEMORY.md that should be updated?"
+
+**Monthly:**
+- Archive daily note files older than 30 days
+- Review your agent's behavior — are there things it consistently gets wrong? Add clarifying facts to `MEMORY.md`
+
+**When something goes wrong:**
+- If the agent starts hallucinating or acting on incorrect context, `MEMORY.md` is usually the first place to check
+- Daily note files from the relevant time period may also have corrupted context
+
+---
+
+## Comparison Table
+
+| Approach | Setup | Token Cost | Best Use Case |
+|----------|-------|-----------|---------------|
+| MEMORY.md | None | Low | Permanent facts, preferences |
+| Daily notes | Automatic | Medium | Recent session context |
+| Vector store | Installation required | Very low | Large knowledge bases |
+
+---
+
+## Common Mistakes
+
+**Over-filling MEMORY.md.** If your MEMORY.md grows beyond 2-3 pages, it starts adding significant overhead to every session. Curate it ruthlessly — keep only what the agent actually needs to know at all times.
+
+**Never reviewing daily files.** Daily logs can accumulate incorrect information if your agent made mistakes. Review them periodically, especially after anything unusual happens.
+
+**Skipping memory entirely.** Some users try to keep everything in the conversation window and never write to files. This works until the session restarts and all context is lost. Write it down.
+
+---
+
+If you are unsure which memory setup is right for your use case, [open a support ticket](/support) and describe what you are trying to accomplish. We are happy to recommend a configuration.
+
+— REL — OpenClaw Support
