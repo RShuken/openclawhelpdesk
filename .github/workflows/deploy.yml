@@ -34,6 +34,7 @@ jobs:
 
       - name: Sync docs to ClawHub API
         if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         run: npm run sync-docs
         env:
           CLAWHUB_API_URL: ${{ secrets.CLAWHUB_API_URL }}
