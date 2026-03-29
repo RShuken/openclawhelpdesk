@@ -1,0 +1,124 @@
+---
+title: "How to Cut Your AI Agent API Costs by 80%+"
+description: "Practical techniques to reduce Claude and OpenClaw API costs without sacrificing capability. File tiering, prompt caching, context trimming, and more."
+category: "advanced"
+tags: ["cost-optimization", "api", "performance"]
+published: true
+---
+
+# How to Cut Your AI Agent API Costs by 80%+
+
+Running an AI agent 24/7 gets expensive fast. Tokens add up — especially with long context windows, detailed memory files, and heartbeat checks that run every 30 minutes. Here's what actually works to bring costs down.
+
+## Understand Where Your Tokens Go
+
+Before optimizing, know your baseline. Run your agent for a week and look at what's consuming tokens:
+
+- **Context loading** — MEMORY.md, AGENTS.md, SOUL.md, skill files loaded every session
+- **Heartbeat checks** — regular polls that load full context even for "nothing to do" responses
+- **Tool call overhead** — each tool call adds tokens for inputs and outputs
+- **Long skill files** — verbose SKILL.md files loaded for every relevant task
+
+Most agents waste 40-60% of tokens on context they don't need for the current task.
+
+## Technique 1: File Tiering System
+
+Split your context files by how often they're actually needed:
+
+**Tier 1 — Always loaded (keep these tiny):**
+- `AGENTS.md` — core operating rules (under 500 words)
+- `USER.md` — who you're helping (under 200 words)
+- `HEARTBEAT.md` — current tasks (keep empty when nothing's pending)
+
+**Tier 2 — Load on demand:**
+- Individual skill SKILL.md files (only when that skill is actually needed)
+- Client profiles (only when working with that specific client)
+- `MEMORY.md` (only in direct main sessions, not every subagent)
+
+**Tier 3 — Never auto-load:**
+- Historical memory files (`memory/2026-01-15.md`)
+- Raw logs
+- Reference docs that rarely change
+
+The single biggest win is keeping `MEMORY.md` out of subagent contexts. That file alone can be 5,000+ tokens that most subagents don't need.
+
+## Technique 2: Prompt Caching
+
+Claude's API supports prompt caching — if the same prefix appears repeatedly, you only pay for it once per 5 minutes. OpenClaw uses this automatically for system prompts, but you can maximize the benefit:
+
+- **Put stable content first** — static instructions before dynamic context
+- **Keep AGENTS.md stable** — avoid editing it daily (cache breaks on changes)
+- **Batch heartbeat checks** — run one heartbeat every 30 min instead of individual checks per thing
+
+Prompt caching can reduce costs by 60-90% on repeated context.
+
+## Technique 3: Heartbeat Optimization
+
+Heartbeats are a common cost sink. Two tweaks that help:
+
+**Batch your checks.** Instead of separate cron jobs for email, calendar, and weather, combine them into one heartbeat that checks all three. One token burn instead of three.
+
+**Use short-circuit responses.** When your HEARTBEAT.md is empty or nothing is pending, the agent should reply `HEARTBEAT_OK` and stop — not write a 200-word status update. Keep heartbeat prompts tight.
+
+**Reduce frequency at night.** If your agent runs heartbeats every 30 minutes, reduce to every 2 hours between midnight and 7am. Nothing urgent happens at 3am.
+
+## Technique 4: Context Trimming
+
+Over time, your MEMORY.md and daily notes grow. Untrimmed, they eat tokens on every session.
+
+**Weekly trim ritual:**
+1. Read through MEMORY.md
+2. Delete anything you haven't referenced in 30+ days
+3. Merge redundant entries (3 notes about the same client → 1 summary)
+4. Move historical facts to dated archive files
+
+Target: MEMORY.md under 2,000 words. Daily memory files under 1,000 words.
+
+**Use memory search instead of loading everything.** If you need to remember something specific, use the memory search tool instead of loading the whole file. Let the search surface just the relevant snippets.
+
+## Technique 5: Subagent Isolation
+
+Subagents are great for parallel work but expensive if they inherit too much context. When spawning a subagent:
+
+- Pass only the specific context it needs (not your full workspace state)
+- Give it a focused task description instead of a long briefing
+- Set a `runTimeoutSeconds` limit so runaway subagents don't burn budget
+
+A focused subagent prompt like "Write this function and return the code" costs 1/10th of one that loads your full AGENTS.md + MEMORY.md first.
+
+## Technique 6: Model Routing
+
+Not every task needs your best (most expensive) model:
+
+- **Expensive model** — complex reasoning, coding, strategy
+- **Cheap model** — heartbeat checks, simple lookups, status reports, formatting
+- **No model** — pure file reads, status checks, scheduled reminders (use cron system events)
+
+In OpenClaw, you can set different models per cron job. Routine heartbeats running on a cheaper model saves real money.
+
+## What a Realistic Reduction Looks Like
+
+A typical OpenClaw setup before optimization: 2-3M tokens/day → ~$3-5/day on Claude Sonnet.
+
+After applying these techniques:
+- Prompt caching: -60% on repeated context
+- Heartbeat batching: -40% on check frequency
+- File tiering: -30% per session on loaded context
+- Model routing: -50% on routine tasks
+
+Combined effect: many users see 70-85% cost reduction. One community member documented going from $180/month to $28/month.
+
+## Quick Wins Checklist
+
+- [ ] Add `cache_control: ephemeral` to static system prompt sections
+- [ ] Keep HEARTBEAT.md empty when nothing's pending
+- [ ] Move MEMORY.md reads to main session only (not subagents)
+- [ ] Set `HEARTBEAT_OK` as default heartbeat response when nothing to do
+- [ ] Delete memory entries older than 60 days
+- [ ] Audit AGENTS.md — is everything in there actually needed?
+- [ ] Route heartbeat cron jobs to a cheaper model
+- [ ] Set runTimeoutSeconds on all subagents
+
+---
+
+*Found this helpful? Check out [Power User Tips & Tricks](/docs/power-user-tips) for more optimization techniques.*
