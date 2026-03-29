@@ -1,0 +1,125 @@
+# OpenClaw + Slack: Fixing Context Loss After Slack's March 2026 Rate Limit Change
+
+If your OpenClaw agent suddenly started giving vague, context-free responses in Slack — not remembering what you said a few minutes ago, missing thread context, or giving answers that feel disconnected from the conversation — Slack's March 3, 2026 API change is almost certainly the culprit.
+
+This hit a lot of people without warning. Here's what happened, why it matters, and exactly how to fix it.
+
+---
+
+## What Slack Changed
+
+On March 3, 2026, Slack tightened the rate limits on `conversations.history` for apps **not listed in the Slack Marketplace**. The new limits are:
+
+- **1 request per minute** (down from effectively much higher)
+- **15 messages maximum per call** (down from 100)
+
+For most personal OpenClaw setups, your agent uses a custom Slack app that isn't Marketplace-listed. That means it now hits these stricter limits every time it tries to read conversation history to understand context.
+
+The result: instead of reading the last 50–100 messages to understand what's been discussed, your agent can now only read the last 15 — and slowly. In active channels or long threads, that means it's working with roughly 15% of the context it had before. Conversations feel like talking to someone with amnesia.
+
+---
+
+## Why This Breaks Agents Specifically
+
+Human Slack users aren't affected because they can see the whole conversation visually. Agents can't — they have to actively fetch message history on every response. When that fetch is throttled and capped, the agent's working context collapses.
+
+Signs your setup is affected:
+- Agent gives generic responses that don't reference recent messages
+- Agent asks you to repeat information you already provided
+- Agent loses track of multi-step tasks in a thread
+- In busy channels, agent seems "confused" or off-topic
+- `openclaw logs` shows repeated 429 errors from the Slack API
+
+---
+
+## Fix Option 1: Increase Local Context Cache (Recommended)
+
+The most effective fix is to configure OpenClaw's Slack integration to cache messages locally rather than fetching from the API on every turn. This trades API calls for a persistent local store.
+
+In your `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "integrations": {
+    "slack": {
+      "contextMode": "cache",
+      "cacheMessages": 200,
+      "cacheTTL": 3600
+    }
+  }
+}
+```
+
+**What this does:** OpenClaw listens for new messages via the Events API (WebSocket, not rate-limited) and stores them in a local ring buffer. When your agent needs context, it reads from the local cache rather than calling `conversations.history`. You get full context, no rate limit issues.
+
+**Requirements:** Your Slack app needs the `messages:read` Events API subscription enabled. If it's already posting and responding, this is likely already configured. Check your Slack app settings under "Event Subscriptions."
+
+After updating the config, restart:
+
+```bash
+openclaw gateway restart
+```
+
+---
+
+## Fix Option 2: Reduce History Fetch Depth
+
+If you'd rather not use local caching, you can reduce how aggressively OpenClaw fetches history — enough to stay under the 1 req/min limit without breaking context:
+
+```json
+{
+  "integrations": {
+    "slack": {
+      "contextMode": "fetch",
+      "maxHistoryMessages": 12,
+      "historyFetchInterval": 70
+    }
+  }
+}
+```
+
+Setting `maxHistoryMessages` to 12 (under the new 15-message limit) avoids partial responses. Setting `historyFetchInterval` to 70 seconds keeps you safely under the 1/min rate limit.
+
+This reduces context quality (12 messages vs. the previous 50–100), but it's stable and doesn't require any Slack app changes.
+
+---
+
+## Fix Option 3: Get Your App Marketplace-Listed (Permanent Fix)
+
+If you're running OpenClaw for a team or business, the permanent solution is getting your Slack app listed in the Marketplace. Marketplace apps get the standard (non-restricted) rate limits back.
+
+This is a multi-week process that involves Slack's review, so it's not a quick fix — but worth pursuing if Slack is a critical integration for you. See Slack's developer documentation for the submission process.
+
+---
+
+## Checking If the Fix Worked
+
+After applying Fix Option 1 or 2 and restarting, send a few messages in Slack and then ask your agent something that requires recalling an earlier message:
+
+```
+Hey, what was the task I mentioned at the start of this conversation?
+```
+
+If it answers correctly, context is restored. You can also check `openclaw logs --tail 50` — you should no longer see 429 errors from the Slack API.
+
+---
+
+## Background: Why Non-Marketplace Apps?
+
+Slack's rationale was that unapproved custom apps represented an unknown risk surface — they wanted to enforce tighter limits to reduce abuse potential while Marketplace-listed apps had gone through review. For personal productivity bots and team automations, this is a frustrating tradeoff, but the local cache workaround (Fix Option 1) largely neutralizes it.
+
+---
+
+## Still Having Issues?
+
+If you've tried the fixes above and Slack context is still broken:
+
+1. Run `openclaw doctor` and look for Slack-related warnings
+2. Check `openclaw logs --tail 100 | grep -i slack` for API errors
+3. Verify your Slack app has `messages:read` event subscriptions enabled (for Fix 1)
+4. Confirm your `openclaw.json` is valid: `openclaw config --validate`
+5. Post in the helpdesk with your log output — include the Slack integration section of your config (but redact your bot token)
+
+---
+
+*Last updated: March 2026. Applies to OpenClaw 2026.2.x and later with Slack integration.*
