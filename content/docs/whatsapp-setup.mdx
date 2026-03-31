@@ -1,0 +1,105 @@
+---
+title: Setting Up WhatsApp Integration with OpenClaw
+description: Connect your OpenClaw AI assistant to WhatsApp for business messaging
+tags: [whatsapp, integration, setup]
+---
+
+
+Connect your OpenClaw agent to WhatsApp so you can chat with it from your phone — just like messaging a friend.
+
+## What You Need
+
+- OpenClaw installed and running (v2026.1.0 or later)
+- A WhatsApp Business account (free to create)
+- A Meta developer account at [developers.facebook.com](https://developers.facebook.com)
+- A phone number that isn't already linked to a personal WhatsApp account
+
+## Step 1: Create a Meta App
+
+1. Go to [developers.facebook.com](https://developers.facebook.com) and log in
+2. Click **Create App** → choose **Business** type
+3. Give it a name like "My OpenClaw Agent"
+4. Under **Add Products**, find **WhatsApp** and click **Set Up**
+
+## Step 2: Get Your API Credentials
+
+In your Meta app dashboard:
+
+1. Go to **WhatsApp** → **API Setup**
+2. You'll see a **Phone number ID** and **WhatsApp Business Account ID** — save both
+3. Click **Generate** to get a temporary access token (you'll make a permanent one later)
+4. Note the **test phone number** Meta gives you — this is your agent's number
+
+## Step 3: Set Up a Permanent Token
+
+Temporary tokens expire after 24 hours. For a permanent setup:
+
+1. Go to **Business Settings** → **System Users**
+2. Create a new system user with **Admin** role
+3. Assign it to your app with **full control**
+4. Generate a token with `whatsapp_business_messaging` and `whatsapp_business_management` permissions
+5. Save this token — it won't be shown again
+
+## Step 4: Configure OpenClaw
+
+Add the WhatsApp channel to your OpenClaw config:
+
+```bash
+openclaw config set channels.whatsapp.phoneNumberId YOUR_PHONE_NUMBER_ID
+openclaw config set channels.whatsapp.businessAccountId YOUR_BUSINESS_ACCOUNT_ID
+openclaw config set channels.whatsapp.accessToken YOUR_PERMANENT_TOKEN
+openclaw config set channels.whatsapp.verifyToken any-random-string-you-choose
+```
+
+Then restart the gateway:
+
+```bash
+openclaw gateway restart
+```
+
+## Step 5: Set Up the Webhook
+
+Your OpenClaw gateway needs to receive messages from WhatsApp. You need a public URL.
+
+If you're running locally:
+- Use a tunnel service (Cloudflare Tunnel, ngrok, or Tailscale Funnel)
+- Point it to your OpenClaw gateway port (default: 18789)
+
+In your Meta app:
+1. Go to **WhatsApp** → **Configuration**
+2. Set **Callback URL** to: `https://your-public-url/api/channels/whatsapp/webhook`
+3. Set **Verify Token** to the same string you chose in Step 4
+4. Subscribe to: `messages`, `messaging_postbacks`
+
+## Step 6: Test It
+
+1. Send a message from your personal WhatsApp to the test number
+2. You should see the message in your OpenClaw logs
+3. Your agent should respond
+
+## Troubleshooting
+
+**Messages aren't arriving:**
+- Check that your webhook URL is publicly accessible
+- Verify the callback URL in Meta matches your gateway URL exactly
+- Check OpenClaw logs: `openclaw gateway logs`
+
+**Agent responds but WhatsApp shows nothing:**
+- WhatsApp requires you to respond within 24 hours of the user's last message
+- Check that your access token hasn't expired
+- Verify the phone number ID is correct
+
+**"This request is not allowed" error:**
+- You may need to verify your Meta business account
+- Check that the system user has the right permissions
+
+## Limitations
+
+- WhatsApp has a 24-hour messaging window — your agent can only message users who messaged first (within the last 24 hours)
+- Rich formatting is limited compared to Telegram or Discord
+- File sharing works but has size limits (16MB for most media)
+- No inline keyboards or buttons (WhatsApp uses a different interactive message format)
+
+## Cost
+
+The WhatsApp Business API is free for the first 1,000 conversations per month. After that, Meta charges per conversation (rates vary by country). Most personal use stays well within the free tier.

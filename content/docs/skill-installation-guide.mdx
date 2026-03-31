@@ -1,0 +1,184 @@
+---
+title: How to Install and Manage Skills
+description: Guide to browsing, installing, configuring, and troubleshooting OpenClaw skills
+tags: [skills, installation, configuration]
+---
+
+
+Skills are what make your OpenClaw agent actually useful. They're instruction sets that teach your agent how to do specific things — manage your calendar, check the weather, monitor your home cameras, or run a CRM.
+
+## What's a Skill?
+
+A skill is a folder containing a `SKILL.md` file and optional supporting files (scripts, references, config). When your agent starts a conversation, it scans available skills and loads the right one for the job.
+
+Think of it like hiring a new employee — you hand them a procedures manual. The skill is that manual.
+
+## Where Skills Live
+
+Skills go in your agent's workspace directory:
+
+```
+~/clawd/skills/
+├── weather/
+│   └── SKILL.md
+├── calendar/
+│   └── SKILL.md
+├── home-automation/
+│   ├── SKILL.md
+│   ├── config.json
+│   └── scripts/
+│       └── discover-devices.sh
+└── ...
+```
+
+## Installing a Skill
+
+### From ClawHub (Skill Marketplace)
+
+```bash
+# Browse available skills
+openclaw skill search "weather"
+
+# Install a skill
+openclaw skill install weather
+
+# Verify it's there
+ls ~/clawd/skills/weather/
+```
+
+### Manual Installation
+
+If someone sends you a skill or you're building your own:
+
+1. Create the skill directory:
+   ```bash
+   mkdir -p ~/clawd/skills/my-new-skill
+   ```
+
+2. Add the SKILL.md:
+   ```bash
+   nano ~/clawd/skills/my-new-skill/SKILL.md
+   ```
+
+3. Restart your gateway so the agent picks it up:
+   ```bash
+   openclaw gateway restart
+   ```
+
+4. Test it — ask your agent to use the new skill.
+
+### From a Git Repository
+
+If a skill is shared via GitHub:
+
+```bash
+cd ~/clawd/skills/
+git clone https://github.com/someone/cool-skill.git
+openclaw gateway restart
+```
+
+## Skill Structure
+
+A well-built skill has:
+
+```
+my-skill/
+├── SKILL.md          # Required — the main instructions
+├── config.json       # Optional — settings and API endpoints
+├── references/       # Optional — supporting docs
+│   └── api-docs.md
+└── scripts/          # Optional — helper scripts
+    └── setup.sh
+```
+
+### SKILL.md Format
+
+The SKILL.md starts with frontmatter:
+
+```markdown
+---
+name: my-skill
+description: What this skill does in one line
+---
+
+# My Skill
+
+Instructions for the agent...
+```
+
+The `description` field is what the agent uses to decide when to load this skill. Make it specific.
+
+## Managing Skills
+
+### List installed skills
+
+```bash
+ls ~/clawd/skills/
+```
+
+### Disable a skill (without deleting)
+
+Rename it so the agent doesn't find it:
+
+```bash
+mv ~/clawd/skills/weather ~/clawd/skills/_weather_disabled
+```
+
+### Update a skill
+
+```bash
+# If installed from ClawHub
+openclaw skill update weather
+
+# If manual/git
+cd ~/clawd/skills/weather && git pull
+```
+
+### Remove a skill
+
+```bash
+rm -rf ~/clawd/skills/weather
+openclaw gateway restart
+```
+
+## Configuring Skills
+
+Many skills have a `config.json` with settings you can customize:
+
+```json
+{
+  "api_key_env": "WEATHER_API_KEY",
+  "default_location": "Denver, CO",
+  "units": "imperial"
+}
+```
+
+Edit the config, restart the gateway, and the skill picks up the changes.
+
+## Building Your Own Skills
+
+Want to teach your agent something custom? Create a `SKILL.md` that describes:
+
+1. **When to use it** — what triggers should make the agent load this skill
+2. **How to do it** — step-by-step instructions
+3. **What tools to use** — which tools (web search, exec, file ops) the agent should use
+4. **Error handling** — what to do when things go wrong
+
+Start simple. A 20-line SKILL.md that does one thing well is better than a 200-line file that tries to do everything.
+
+See the [Skill Authoring Guide](/docs/skill-authoring) for the full spec and examples.
+
+## Common Issues
+
+### Agent doesn't use my new skill
+- Check the `description` in SKILL.md frontmatter — is it specific enough?
+- Did you restart the gateway after adding it?
+- Try asking the agent explicitly: "Use the [skill-name] skill to..."
+
+### Skill conflicts with another skill
+- Two skills with similar descriptions can confuse the agent
+- Make descriptions distinct: "Check weather forecasts" vs "Monitor air quality"
+
+### Skill needs an API key
+- Check the skill's `config.json` or SKILL.md for required environment variables
+- Set them in `~/.openclaw/.env` or export them before starting the gateway

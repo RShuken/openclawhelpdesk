@@ -1,0 +1,91 @@
+---
+title: Running OpenClaw on Multiple Channels
+description: Set up your OpenClaw assistant on Telegram, Discord, WhatsApp, and more simultaneously
+tags: [multi-channel, setup, configuration]
+---
+
+
+Your OpenClaw agent can talk on Telegram, Discord, WhatsApp, and more — all at the same time, sharing the same memory and skills.
+
+## How Multi-Channel Works
+
+OpenClaw's gateway handles all channels through a single agent. Messages from any channel go to the same agent brain, which means:
+
+- Your agent remembers conversations across channels
+- Skills work the same everywhere
+- You configure once, use everywhere
+
+## Adding a Second Channel
+
+If you already have Telegram set up and want to add Discord:
+
+```bash
+# Add Discord bot token
+openclaw config set channels.discord.botToken YOUR_DISCORD_BOT_TOKEN
+
+# Restart to pick up the new channel
+openclaw gateway restart
+```
+
+That's it. Your agent now responds on both Telegram and Discord.
+
+## Supported Channels
+
+| Channel | Setup Difficulty | Best For |
+|---------|-----------------|----------|
+| Telegram | Easy | Personal use, quick setup |
+| Discord | Easy | Communities, team use |
+| WhatsApp | Medium | Mobile-first, non-technical users |
+| Slack | Medium | Business/team use |
+| Web UI | Built-in | Browser access, no app needed |
+
+## Channel-Specific Settings
+
+Each channel can have its own policies:
+
+```bash
+# Telegram: allow DMs from anyone
+openclaw config set channels.telegram.dmPolicy open
+
+# Discord: only respond when mentioned
+openclaw config set channels.discord.requireMention true
+
+# WhatsApp: restrict to specific numbers
+openclaw config set channels.whatsapp.allowFrom "+1234567890,+0987654321"
+```
+
+## Common Multi-Channel Setup
+
+Most people run Telegram for personal use + Discord for a community:
+
+1. **Telegram** — your direct line to the agent, DMs open
+2. **Discord** — a server where friends/team can interact, mention-only to avoid noise
+
+## Things to Know
+
+**Message format differs by channel:**
+- Telegram supports markdown, inline keyboards, and voice messages
+- Discord supports embeds, reactions, and threads
+- WhatsApp has simpler formatting and no inline buttons
+
+**Your agent adapts automatically.** It knows which channel a message came from and formats responses appropriately. Tables work on Telegram but get converted to bullet lists on Discord.
+
+**Rate limits vary.** Telegram is generous. Discord has stricter rate limits. WhatsApp has a 24-hour messaging window. Your agent handles this automatically — but if you're sending a lot of messages, the channel might throttle responses slightly.
+
+**Privacy note:** All channels share the same agent memory. If you tell your agent something private on Telegram, it might reference that knowledge when responding on Discord. If this matters, consider running separate OpenClaw instances for separate audiences.
+
+## Troubleshooting
+
+**Agent responds on one channel but not another:**
+- Check the channel config: `openclaw config get channels`
+- Make sure the bot token is correct
+- Check logs: `openclaw gateway logs | grep discord` (replace with your channel)
+
+**Messages getting mixed up:**
+- Each channel conversation is tracked separately
+- If responses seem confused, the agent might be referencing memory from another channel — this is by design
+
+**Want separate agents per channel?**
+- Run multiple OpenClaw instances on different ports
+- Each gets its own workspace, memory, and config
+- More resource-intensive but fully isolated

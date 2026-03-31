@@ -1,0 +1,108 @@
+---
+title: How to Update OpenClaw Without Breaking Your Setup
+description: Safe update procedures for OpenClaw — pre-update checks, rollback steps, and common pitfalls
+tags: [updating, maintenance, troubleshooting]
+---
+
+
+Updating OpenClaw is straightforward, but a bad update can knock your assistant offline. Here's how to do it safely every time.
+
+## Before You Update
+
+Run these checks first:
+
+```bash
+# Check your current version
+openclaw --version
+
+# Make sure your agent is running and healthy
+openclaw doctor
+
+# Back up your config (just in case)
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak
+```
+
+If `openclaw doctor` shows errors, fix those before updating. Don't stack problems.
+
+## Updating
+
+OpenClaw is installed via npm, so updating is one command:
+
+```bash
+npm update -g openclaw
+```
+
+Or if you want a specific version:
+
+```bash
+npm install -g openclaw@2026.2.3
+```
+
+After the install finishes, restart your gateway:
+
+```bash
+openclaw gateway restart
+```
+
+## After Updating
+
+Verify everything came back clean:
+
+```bash
+# Check new version
+openclaw --version
+
+# Run diagnostics
+openclaw doctor
+
+# Check your agent is responding
+# Send it a test message in Telegram/Discord
+```
+
+## If Something Breaks
+
+### Agent won't start after update
+
+```bash
+# Check the logs
+openclaw gateway logs
+
+# Most common: config format changed between versions
+# Restore your backup
+cp ~/.openclaw/openclaw.json.bak ~/.openclaw/openclaw.json
+openclaw gateway restart
+```
+
+### Tools stopped working
+
+Some updates change tool availability or permissions. Check:
+
+```bash
+# Look at your config for tool policies
+cat ~/.openclaw/openclaw.json | grep -A 10 "tools"
+```
+
+If tools were disabled, you may need to re-enable them in your config. See our [Tools Disabled After Update](/docs/tools-disabled-after-update) guide.
+
+### Skills broken after update
+
+Skills that depend on specific OpenClaw APIs might need updates too:
+
+```bash
+# Check if your skills reference deprecated features
+openclaw doctor --verbose
+```
+
+## Best Practices
+
+- **Update during quiet hours.** Don't update while your agent is mid-conversation with someone.
+- **Read the changelog first.** Check what changed at the [OpenClaw releases page](https://github.com/OpenInternetProject/OpenClaw/releases).
+- **Keep your config backup.** Always `cp` your config before updating.
+- **Test after every update.** Send your agent a quick message to make sure it responds.
+- **Don't skip major versions.** If you're on 2025.x and the latest is 2026.x, read the migration guide first.
+
+## Automatic Updates
+
+We don't recommend automatic updates for production setups. A bad update with no one watching can mean hours of downtime. Update manually, verify, then move on.
+
+If you want notifications about new versions, your agent can check for you during its heartbeat cycle — ask us about setting that up.

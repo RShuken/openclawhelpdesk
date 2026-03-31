@@ -1,0 +1,135 @@
+---
+title: How to Back Up and Restore Your OpenClaw Setup
+description: Protect your OpenClaw configuration, memory, and skills with proper backups
+tags: [backup, restore, maintenance]
+---
+
+
+Your OpenClaw configuration, skills, and memory are valuable. Here's how to back them up and restore them if something goes wrong.
+
+## What to Back Up
+
+| Item | Location | Why |
+|------|----------|-----|
+| Configuration | `~/.openclaw/openclaw.json` | Gateway settings, channel configs, plugins |
+| Skills | `~/.openclaw/skills/` | Installed skill directories |
+| Memory | `~/.openclaw/memory/` | Agent memory and context files |
+| Environment | `~/.openclaw/.env` | API keys and secrets |
+| Workspace | `~/clawd/` (or your workspace) | Agent workspace files |
+
+## Quick Backup (One Command)
+
+```bash
+# Create a dated backup of everything
+tar czf ~/openclaw-backup-$(date +%Y%m%d).tar.gz \
+  ~/.openclaw/openclaw.json \
+  ~/.openclaw/skills/ \
+  ~/.openclaw/memory/ \
+  ~/.openclaw/.env \
+  2>/dev/null
+
+echo "Backup saved to ~/openclaw-backup-$(date +%Y%m%d).tar.gz"
+```
+
+## Restore from Backup
+
+```bash
+# Stop the gateway first
+openclaw gateway stop
+
+# Extract the backup
+tar xzf ~/openclaw-backup-YYYYMMDD.tar.gz -C /
+
+# Restart the gateway
+openclaw gateway start
+
+# Verify everything is working
+openclaw doctor
+```
+
+## What NOT to Back Up
+
+- **Node modules** (`node_modules/`) — reinstall instead
+- **Log files** — not needed for restore
+- **Temporary files** (`/tmp/`) — session-specific, not persistent
+
+## Automated Backups
+
+Set up a daily backup with cron:
+
+```bash
+# Edit your crontab
+crontab -e
+
+# Add this line (backs up daily at midnight)
+0 0 * * * tar czf ~/openclaw-backups/backup-$(date +\%Y\%m\%d).tar.gz ~/.openclaw/openclaw.json ~/.openclaw/skills/ ~/.openclaw/memory/ ~/.openclaw/.env 2>/dev/null
+```
+
+Create the backup directory first:
+
+```bash
+mkdir -p ~/openclaw-backups
+```
+
+## Cloud Backup (Advanced)
+
+If you want off-machine backups, use any cloud sync tool:
+
+```bash
+# Using rclone (supports S3, Google Drive, Dropbox, etc.)
+rclone sync ~/.openclaw/ remote:openclaw-backup/ --exclude node_modules/
+
+# Using rsync to another machine
+rsync -avz ~/.openclaw/ user@backup-server:~/openclaw-backup/
+```
+
+## Before Major Updates
+
+Always back up before updating OpenClaw:
+
+```bash
+# 1. Note your current version
+openclaw --version
+
+# 2. Create a backup
+tar czf ~/openclaw-pre-update-$(date +%Y%m%d).tar.gz ~/.openclaw/
+
+# 3. Now update safely
+npm update -g openclaw
+
+# 4. If something breaks, restore
+tar xzf ~/openclaw-pre-update-*.tar.gz -C /
+```
+
+## Restoring Individual Components
+
+### Just the config:
+```bash
+cp ~/openclaw-backup/openclaw.json ~/.openclaw/openclaw.json
+openclaw gateway restart
+```
+
+### Just the skills:
+```bash
+cp -r ~/openclaw-backup/skills/* ~/.openclaw/skills/
+```
+
+### Just environment variables:
+```bash
+cp ~/openclaw-backup/.env ~/.openclaw/.env
+# Re-source or restart your terminal
+```
+
+## Verify After Restore
+
+After any restore, always run:
+
+```bash
+openclaw doctor
+```
+
+Check for:
+- ✅ Gateway is running
+- ✅ All plugins loaded
+- ✅ Channel connections active
+- ✅ API keys valid
