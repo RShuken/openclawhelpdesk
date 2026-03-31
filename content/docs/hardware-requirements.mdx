@@ -1,0 +1,110 @@
+---
+title: Hardware Requirements and Recommendations
+description: Minimum and recommended hardware for running OpenClaw, including local LLM considerations
+tags: [hardware, requirements, setup]
+---
+
+
+OpenClaw runs on your own machine. Here's what you need and what we recommend for different use cases.
+
+## Minimum Requirements
+
+These are the bare minimums to get OpenClaw running:
+
+| Component | Minimum |
+|-----------|---------|
+| OS | macOS 12+, Ubuntu 22.04+, or Windows 11 (WSL2) |
+| RAM | 4 GB |
+| Storage | 2 GB free |
+| CPU | Any modern x64 or ARM processor |
+| Network | Stable internet connection |
+| Node.js | v18 or later |
+
+With minimum specs, OpenClaw will run but may feel slow during heavy conversations or multi-channel use.
+
+## Recommended Specs
+
+For a smooth experience with multiple channels and skills:
+
+| Component | Recommended |
+|-----------|------------|
+| OS | macOS 14+ or Ubuntu 24.04 |
+| RAM | 8 GB+ |
+| Storage | 10 GB free (for memory, logs, and skills) |
+| CPU | Apple M1+ or Intel i5/AMD Ryzen 5 (2020+) |
+| Network | Broadband with low latency |
+
+## Hardware by Use Case
+
+### "Just Telegram + basic stuff"
+- **Mac Mini M1 (base)** — perfect. Low power, runs 24/7, quiet.
+- **Raspberry Pi 5 (8GB)** — works but slower. Good for tinkering.
+- **Any old laptop** — runs fine. Just keep it plugged in.
+
+### "Multi-channel power user"
+- **Mac Mini M2/M4** — our top recommendation. Fast, efficient, silent.
+- **Any desktop with 16GB+ RAM** — if you're running local LLMs too.
+- **Cloud VPS (4 vCPU, 8GB RAM)** — if you don't want to run hardware at home.
+
+### "Local LLMs (Ollama)"
+Running AI models locally changes the equation dramatically:
+
+| Model Size | Minimum RAM | Recommended |
+|-----------|-------------|-------------|
+| 7B params | 8 GB | 16 GB |
+| 13B params | 16 GB | 32 GB |
+| 70B params | 48 GB | 64 GB |
+
+**Important:** If your machine has less than 16GB RAM, skip local LLMs. Use Anthropic/OpenAI APIs instead — they're faster and you won't fry your computer.
+
+### "Always-on server"
+For 24/7 operation (recommended):
+- **Mac Mini** — draws 5-10W idle, silent, ARM efficient
+- **Intel NUC / Mini PC** — small, quiet, affordable
+- **Cloud VPS** — zero hardware maintenance, ~$10-30/month
+
+**Don't use:** Gaming laptops (loud fans, high power draw), tablets, phones.
+
+## Cloud vs. Local
+
+| Factor | Local Hardware | Cloud VPS |
+|--------|---------------|-----------|
+| Privacy | Everything stays on your machine | Data passes through cloud provider |
+| Cost | One-time hardware purchase | Monthly recurring ($10-30) |
+| Reliability | Depends on your power/internet | 99.9%+ uptime |
+| Performance | Depends on hardware | Consistent |
+| Local LLMs | Yes | Possible but expensive |
+| Maintenance | You handle updates, power, network | Managed |
+
+**Our recommendation:** Mac Mini at home for privacy-first users. Cloud VPS if you don't want to think about hardware.
+
+## Network Requirements
+
+- **Bandwidth:** 1 Mbps up/down is enough (it's mostly text)
+- **Latency:** Lower is better for responsive conversations (<100ms to API providers)
+- **Ports:** Outbound HTTPS (443) must be open — which it is on virtually all networks
+- **Static IP:** Not required. OpenClaw works behind NAT.
+
+If you're on a corporate network with heavy firewall rules, you may need to whitelist API endpoints for your AI provider (api.anthropic.com, api.openai.com, etc.).
+
+## Power and Heat
+
+OpenClaw itself uses minimal resources — it's mostly waiting for API responses. The biggest power draw comes from:
+
+1. Local LLMs (if running Ollama) — can spike CPU/GPU usage
+2. Many simultaneous conversations
+3. Heavy tool use (web scraping, file operations)
+
+A Mac Mini running OpenClaw 24/7 costs about $1-2/month in electricity.
+
+## Our Top Pick
+
+**Mac Mini M2 (16GB RAM, 256GB SSD)** — ~$500 refurbished
+
+- Runs OpenClaw + Ollama for local models
+- Silent, 5W idle
+- Works as a headless server (control via SSH or Telegram)
+- Enough storage for years of memory and conversation logs
+- The hardware we recommend to most of our clients
+
+If budget is tight: any laptop or desktop made after 2018 with 8GB RAM will work fine for cloud-only AI (no local LLMs).

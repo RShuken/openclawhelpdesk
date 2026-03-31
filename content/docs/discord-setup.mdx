@@ -1,0 +1,119 @@
+---
+title: Setting Up Discord Integration
+description: Connect your OpenClaw AI assistant to Discord for messaging and automation
+tags: [discord, integration, setup]
+---
+
+
+Connect your OpenClaw agent to Discord so you can chat with it in any server or DM.
+
+## What You'll Need
+
+- A Discord account
+- Your OpenClaw instance running (`openclaw doctor` should be clean)
+- About 15 minutes
+
+## Step 1: Create a Discord Bot
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application** — give it a name (this is your bot's name in Discord)
+3. Go to the **Bot** tab on the left
+4. Click **Reset Token** and copy the token — you'll need this in a moment
+5. Under **Privileged Gateway Intents**, enable:
+   - **Message Content Intent** (required for your bot to read messages)
+   - **Server Members Intent** (optional, needed if you want user info)
+
+**Important:** Never share your bot token. If it leaks, go back here and reset it immediately.
+
+## Step 2: Invite the Bot to Your Server
+
+1. Go to the **OAuth2** tab → **URL Generator**
+2. Under **Scopes**, check `bot`
+3. Under **Bot Permissions**, check:
+   - Send Messages
+   - Read Message History
+   - Use Slash Commands
+   - Attach Files
+   - Add Reactions
+   - Embed Links
+4. Copy the generated URL and open it in your browser
+5. Select your server and authorize
+
+## Step 3: Configure OpenClaw
+
+Add the Discord plugin to your OpenClaw config:
+
+```bash
+openclaw config edit
+```
+
+Add under `plugins.entries`:
+
+```json
+{
+  "discord": {
+    "kind": "discord",
+    "config": {
+      "token": "YOUR_BOT_TOKEN_HERE"
+    }
+  }
+}
+```
+
+Or set via environment variable:
+
+```bash
+export DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE"
+```
+
+Then restart:
+
+```bash
+openclaw gateway restart
+```
+
+## Step 4: Test It
+
+Send your bot a DM or mention it in a server channel:
+
+```
+@YourBot hey, are you there?
+```
+
+You should get a response within a few seconds.
+
+## Discord-Specific Tips
+
+### Forum Channels
+If you use Discord forum channels, your bot can participate in threads. Each forum post becomes its own conversation context.
+
+### Slash Commands
+OpenClaw registers slash commands automatically. Type `/` in any channel where the bot is active to see available commands.
+
+### Reactions
+Your bot can react to messages with emoji. This is controlled by the `reactions` setting in your config.
+
+### Multiple Servers
+One bot token works across all servers you've invited it to. Each server gets its own conversation context.
+
+### Rate Limits
+Discord has message rate limits. If your bot sends too many messages too fast, Discord will throttle it. OpenClaw handles this gracefully — messages queue and send when the rate limit clears.
+
+## Troubleshooting
+
+### Bot is online but doesn't respond
+- Check that **Message Content Intent** is enabled in the Developer Portal
+- Make sure the bot has permission to read and send in that channel
+- Run `openclaw doctor` to check for config errors
+
+### Bot responds but slowly
+- This is usually the AI model response time, not Discord
+- Check `openclaw gateway logs` for any errors
+
+### Bot went offline
+- Run `openclaw gateway status` — if the gateway is down, restart it
+- Check your bot token hasn't been reset in the Developer Portal
+
+## Privacy Note
+
+Your Discord bot sees messages in channels where it has access. If you're adding it to a shared server, be aware that it can read all messages in channels it can access. Set channel permissions accordingly if you want to limit what it sees.

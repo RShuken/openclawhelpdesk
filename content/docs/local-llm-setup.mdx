@@ -1,0 +1,140 @@
+---
+title: Running OpenClaw with Local LLMs (Ollama)
+description: How to configure OpenClaw to use locally-hosted models via Ollama for privacy and cost savings
+tags: [ollama, local-llm, configuration, privacy]
+---
+
+
+Run your OpenClaw agent entirely on your machine — no cloud API, no usage fees, complete privacy.
+
+## What You Need
+
+- **RAM:** At least 8GB free (16GB+ recommended)
+- **Storage:** 4-50GB depending on the model
+- **CPU:** Any modern processor works, but responses will be slower
+- **GPU (optional):** NVIDIA GPU with 8GB+ VRAM dramatically speeds things up. Apple Silicon Macs also run models efficiently.
+
+## Step 1: Install Ollama
+
+Ollama is the easiest way to run local models.
+
+**macOS:**
+```bash
+brew install ollama
+```
+
+**Linux:**
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+**Windows:**
+Download from [ollama.ai](https://ollama.ai)
+
+## Step 2: Download a Model
+
+Start with a model that fits your hardware:
+
+| Hardware | Recommended Model | Download Size | Quality |
+|----------|------------------|---------------|---------|
+| 8GB RAM | `llama3.2:3b` | ~2GB | Basic tasks, fast |
+| 16GB RAM | `llama3.1:8b` | ~4.7GB | Good all-around |
+| 32GB RAM | `llama3.1:70b` | ~40GB | Near cloud quality |
+| Apple M1+ | `llama3.1:8b` | ~4.7GB | Great on Metal |
+| NVIDIA 8GB+ | `llama3.1:8b` | ~4.7GB | GPU-accelerated |
+
+Download your chosen model:
+
+```bash
+ollama pull llama3.1:8b
+```
+
+## Step 3: Start Ollama
+
+```bash
+ollama serve
+```
+
+Leave this running. Ollama listens on `http://localhost:11434` by default.
+
+## Step 4: Connect OpenClaw to Ollama
+
+```bash
+openclaw auth add ollama --base-url http://localhost:11434
+```
+
+Then set it as your default model:
+
+```bash
+openclaw config set agents.defaults.model ollama/llama3.1:8b
+```
+
+Restart the gateway:
+
+```bash
+openclaw gateway restart
+```
+
+## Step 5: Test It
+
+Send a message to your agent. It should respond using the local model. First response may take a few seconds as the model loads into memory.
+
+## Mixing Local and Cloud
+
+You can use a local model for everyday tasks and a cloud model for complex ones:
+
+```bash
+# Default to local
+openclaw config set agents.defaults.model ollama/llama3.1:8b
+
+# Use Claude for specific skills that need it
+# (configure per-skill model overrides in the skill config)
+```
+
+## Performance Tips
+
+**Slow responses?**
+- Use a smaller model (3b instead of 8b)
+- Close other memory-heavy apps
+- If you have a GPU, make sure Ollama is using it: `ollama ps`
+
+**Model keeps unloading?**
+- Ollama unloads models after inactivity to free RAM
+- Set `OLLAMA_KEEP_ALIVE=-1` to keep models loaded permanently
+- Or set a longer timeout: `OLLAMA_KEEP_ALIVE=1h`
+
+**Out of memory?**
+- Switch to a quantized (smaller) version: `ollama pull llama3.1:8b-q4_0`
+- Close other applications
+- Consider a model designed for less RAM
+
+## Limitations
+
+Local models are impressive but not as capable as cloud models (Claude, GPT-4):
+
+- **Slower** — especially without a GPU (10-60 seconds per response vs 2-5 seconds)
+- **Less accurate** — smaller models make more mistakes on complex tasks
+- **Limited context** — most local models handle 4K-8K tokens vs 100K+ for cloud
+- **No tool use** — many local models don't support function calling well
+- **Skills may not work** — skills that rely on structured output or complex reasoning may fail
+
+**Recommendation:** Start with a cloud provider to learn OpenClaw, then experiment with local models once you know what you need. Many users run local for casual chat and cloud for serious work.
+
+## Troubleshooting
+
+**"Connection refused" error:**
+- Make sure `ollama serve` is running
+- Check the URL: `curl http://localhost:11434`
+
+**Very slow first response:**
+- The model is loading into memory — subsequent responses will be faster
+- This is normal, especially for larger models
+
+**Garbled or nonsensical output:**
+- Try a different model — some are better than others for conversational AI
+- Make sure you have enough RAM (check with `free -h` on Linux or Activity Monitor on Mac)
+
+**GPU not being used:**
+- Run `ollama ps` to check if GPU layers are loaded
+- NVIDIA: make sure CUDA drivers are installed
+- Apple: Metal acceleration is automatic on M-series chips

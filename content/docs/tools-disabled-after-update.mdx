@@ -1,0 +1,111 @@
+---
+title: Why Your Agent Stopped Working After an Update
+description: Common causes and fixes when OpenClaw tools or skills break after updating
+tags: [troubleshooting, updating, tools]
+---
+
+
+Sometimes after updating OpenClaw, your agent might stop responding, lose access to tools, or behave differently. Here's what to check and how to fix it.
+
+## Common Symptoms
+
+- Agent replies with "I don't have access to that tool"
+- Skills that worked yesterday now fail silently
+- Agent can't connect to external services (APIs, databases)
+- Telegram/Discord messages aren't being received
+- "Gateway not running" errors
+
+## Step 1: Check if OpenClaw is Running
+
+Open a terminal and run:
+
+```bash
+openclaw doctor
+```
+
+This checks your gateway status, plugin health, and configuration. Look for any red ❌ indicators.
+
+If the gateway isn't running:
+
+```bash
+openclaw gateway start
+```
+
+## Step 2: Verify Your Configuration
+
+Updates can sometimes reset configuration values. Check your config:
+
+```bash
+cat ~/.openclaw/openclaw.json
+```
+
+Look for:
+- **Channel settings** — are your Telegram/Discord tokens still set?
+- **Plugin entries** — are your skills still listed?
+- **Model settings** — is your preferred model still configured?
+
+If settings were reset, restore them:
+
+```bash
+openclaw gateway call config.patch '{"path.to.setting": "value"}'
+```
+
+## Step 3: Check Environment Variables
+
+Skills often depend on API keys stored as environment variables. Verify they're set:
+
+```bash
+# Check a specific key
+echo $ANTHROPIC_API_KEY
+
+# Check all OpenClaw-related vars
+env | grep -i openclaw
+env | grep -i anthropic
+```
+
+If variables are missing, add them to your shell profile (`~/.bashrc`, `~/.zshrc`) or to `~/.openclaw/.env`.
+
+## Step 4: Reinstall Affected Skills
+
+If a specific skill stopped working:
+
+```bash
+# Check if the skill directory exists
+ls ~/.openclaw/skills/
+
+# If a skill is missing, reinstall it
+# (Ask your operator for the correct installation command)
+```
+
+## Step 5: Check for Breaking Changes
+
+Some updates include breaking changes. Check the release notes:
+
+```bash
+openclaw --version
+```
+
+Then visit the [OpenClaw changelog](https://openclaw.com/changelog) for your version.
+
+## Common Fixes
+
+| Problem | Fix |
+|---------|-----|
+| Gateway won't start | Run `openclaw gateway restart` |
+| Tools missing | Re-add skill directories to config |
+| API keys gone | Re-export environment variables |
+| Wrong model | Update model in `openclaw.json` |
+| Telegram not receiving | Verify bot token and webhook URL |
+
+## Still Stuck?
+
+1. Run `openclaw doctor` and share the output with your operator
+2. Check if the issue is listed in [Known Issues](https://openclawhelpdesk.com/docs/known-issues)
+3. Open a support ticket at [openclawhelpdesk.com](https://openclawhelpdesk.com)
+
+## Prevention Tips
+
+- **Before updating**: Note your current version (`openclaw --version`)
+- **After updating**: Run `openclaw doctor` immediately
+- **Back up your config**: Copy `~/.openclaw/openclaw.json` before updates
+- **Check the changelog**: Read release notes before updating
